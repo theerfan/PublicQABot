@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 ## Starting the bot
 
-After putting your token, username of the responder, username of the developer (the one who recieves errors as messages if something goes wrong), and the id of the channel in the code (which should be done by hand),
+After putting your token, replace the "REDACTED" parts with the username of the responder, username of the developer (the one who recieves errors as messages if something goes wrong), and the id of the channel in the code (which should be done by hand),
 run the program like this (put python3 instead of python if you have python 2 and 3 simultaneously), the reason for running it in interactive mode is that you'll probably want to kill it gracefully when you're done with it.
 
 ```

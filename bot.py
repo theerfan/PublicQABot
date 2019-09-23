@@ -1,6 +1,8 @@
 ﻿import telegram
 from telegram.ext import Updater, Dispatcher, MessageHandler, MessageQueue, CommandHandler, Filters
+from dotenv import load_dotenv
 
+load_dotenv()
 TOKEN = "REDACTED"
 bot = telegram.Bot(TOKEN)
 updater = Updater(token=TOKEN)
@@ -12,10 +14,11 @@ WELCOME_TEXT = "سلام. به بات پرسش و پاسخ خوش آمدید."
 WAIT_TEXT = "پیام شما دریافت شد؛ لطفا شکیبا باشید تا مسئولین جواب بدند."
 RESPONDED_TEXT = "جوابتون رو اینجا دادیم"
 # must not start with an @
-RESPONDER_ID = "REDACTED"
+RESPONDER_IDS = ['SpiritOfTheWater']
 # must start with an @
 CHANNEL_ID = "REDACTED"
 DEV_ID = "REDACTED"
+RESPONDER_GROUP_CHAT_ID = ""
 ASKED_TEXT = "پرسیده اند که"
 ANSWERED_TEXT = "و جواب این است که"
 HIDDEN_STATE = "مخفی"
@@ -27,6 +30,8 @@ def start(bot, update):
     chat_id = message.chat_id
     user = message.from_user.username
     add_to_users(user, chat_id)
+    if user in RESPONDER_IDS:
+        RESPONDER_GROUP_CHAT_ID = chat_id
     bot.send_message(chat_id=chat_id, text=WELCOME_TEXT)
 
 def receive(bot, update):
@@ -34,7 +39,7 @@ def receive(bot, update):
     username = user.username
     message = update.message
     add_to_users(username, message.chat_id)
-    if username == RESPONDER_ID:
+    if username in RESPONDER_IDS:
         receive_from_ta(bot, update)
     else:
         receive_from_users(bot, update, user, message)
@@ -83,7 +88,7 @@ def receive_from_users(bot, update, user, message):
     try:
         if is_a_registered_member(user):
             txt = user.full_name + "\n" + "@" + user.username + "\n" + message.text
-            bot.send_message(chat_id=list_of_active_users[RESPONDER_ID]["id"], text=txt)
+            bot.send_message(chat_id=RESPONDER_GROUP_CHAT_ID, text=txt)
             bot.send_message(chat_id=message.chat_id, text=WAIT_TEXT)
     except Exception as ex:
         not_sent_error(bot, message, ex)
@@ -107,14 +112,14 @@ def returnSentMedia(bot, ta_id, message, txt):
 
 
 def forward_media(bot, update):
-    ta_id = chat_id = list_of_active_users[RESPONDER_ID]["id"]
+    ta_id = chat_id = RESPONDER_GROUP_CHAT_ID
     message = update.message
     user = message.from_user
     username = user.username
     chat_id = message.chat_id
     add_to_users(username, chat_id)
     txt = ""
-    if username != RESPONDER_ID:
+    if username not in RESPONDER_IDS:
         try:
             if message.caption:
                 txt += message.caption
